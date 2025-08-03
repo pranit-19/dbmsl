@@ -1,0 +1,158 @@
+Enter password: ************
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 21
+Server version: 9.2.0 MySQL Community Server - GPL
+
+Copyright (c) 2000, 2025, Oracle and/or its affiliates.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+mysql> CREATE DATABASE school;
+Query OK, 1 row affected (0.04 sec)
+
+mysql> CREATE TABLE students (
+    ->     student_id INT NOT NULL,
+    ->     name VARCHAR(255) NOT NULL,
+    ->     date_of_birth DATE DEFAULT NULL,
+    ->     department_id VARCHAR(255) DEFAULT 'CSE',
+    ->     PRIMARY KEY (student_id),
+    ->     CONSTRAINT CHK CHECK (student_id > 0)
+    -> );
+ERROR 1046 (3D000): No database selected
+mysql> use school;
+Database changed
+mysql> CREATE TABLE students (
+    ->     student_id INT NOT NULL,
+    ->     name VARCHAR(255) NOT NULL,
+    ->     date_of_birth DATE DEFAULT NULL,
+    ->     department_id VARCHAR(255) DEFAULT 'CSE',
+    ->     PRIMARY KEY (student_id),
+    ->     CONSTRAINT CHK CHECK (student_id > 0)
+    -> );
+Query OK, 0 rows affected (0.06 sec)
+
+mysql> CREATE TABLE courses (
+    ->     course_id INT NOT NULL,
+    ->     course_name VARCHAR(255),
+    ->     PRIMARY KEY (course_id)
+    -> );
+Query OK, 0 rows affected (0.24 sec)
+
+mysql> CREATE TABLE enrollment (
+    ->     enrollment_id INT PRIMARY KEY,
+    ->     student_id INT,
+    ->     course_id INT,
+    ->     year INT,
+    ->     FOREIGN KEY (student_id) REFERENCES students(student_id),
+    ->     FOREIGN KEY (course_id) REFERENCES courses(course_id)
+    -> );
+Query OK, 0 rows affected (0.07 sec)
+
+mysql> desc students;
++---------------+--------------+------+-----+---------+-------+
+| Field         | Type         | Null | Key | Default | Extra |
++---------------+--------------+------+-----+---------+-------+
+| student_id    | int          | NO   | PRI | NULL    |       |
+| name          | varchar(255) | NO   |     | NULL    |       |
+| date_of_birth | date         | YES  |     | NULL    |       |
+| department_id | varchar(255) | YES  |     | CSE     |       |
++---------------+--------------+------+-----+---------+-------+
+4 rows in set (0.04 sec)
+
+mysql> desc courses;
++-------------+--------------+------+-----+---------+-------+
+| Field       | Type         | Null | Key | Default | Extra |
++-------------+--------------+------+-----+---------+-------+
+| course_id   | int          | NO   | PRI | NULL    |       |
+| course_name | varchar(255) | YES  |     | NULL    |       |
++-------------+--------------+------+-----+---------+-------+
+2 rows in set (0.00 sec)
+
+mysql> desc enrollments;
+ERROR 1146 (42S02): Table 'school.enrollments' doesn't exist
+mysql> desc enrollment;
++---------------+------+------+-----+---------+-------+
+| Field         | Type | Null | Key | Default | Extra |
++---------------+------+------+-----+---------+-------+
+| enrollment_id | int  | NO   | PRI | NULL    |       |
+| student_id    | int  | YES  | MUL | NULL    |       |
+| course_id     | int  | YES  | MUL | NULL    |       |
+| year          | int  | YES  |     | NULL    |       |
++---------------+------+------+-----+---------+-------+
+4 rows in set (0.00 sec)
+
+mysql> INSERT INTO students (student_id, name, date_of_birth, department_id)
+    -> VALUES
+    ->     (101, 'Ajay', '2000-01-01', 'CSE'),
+    ->     (102, 'Ajay', '2000-01-01', 'CSE');
+Query OK, 2 rows affected (0.04 sec)
+Records: 2  Duplicates: 0  Warnings: 0
+
+mysql> INSERT INTO courses (course_id, course_name)
+    -> VALUES
+    ->     (1, 'Database Systems');
+Query OK, 1 row affected (0.04 sec)
+
+mysql> INSERT INTO enrollment (enrollment_id, student_id, course_id, year)
+    -> VALUES
+    ->     (1, 102, 1, 2024);
+Query OK, 1 row affected (0.04 sec)
+
+mysql> CREATE VIEW student_view1 AS
+    -> SELECT student_id, name FROM students;
+Query OK, 0 rows affected (0.04 sec)
+
+mysql>
+mysql> SELECT * FROM student_view1;
++------------+------+
+| student_id | name |
++------------+------+
+|        101 | Ajay |
+|        102 | Ajay |
++------------+------+
+2 rows in set (0.03 sec)
+
+mysql> NSERT INTO student_view1 (student_id, name) VALUES (105, 'Charlie');
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'NSERT INTO student_view1 (student_id, name) VALUES (105, 'Charlie')' at line 1
+mysql> INSERT INTO student_view1 (student_id, name) VALUES (105, 'Charlie');
+Query OK, 1 row affected (0.04 sec)
+
+mysql> DELETE FROM student_view1 WHERE student_id = 101;
+Query OK, 1 row affected (0.04 sec)
+
+mysql> UPDATE student_view1 SET name = 'AJAY' WHERE student_id = 102;
+Query OK, 1 row affected (0.03 sec)
+Rows matched: 1  Changed: 1  Warnings: 0
+
+mysql> CREATE VIEW env AS
+    -> SELECT
+    ->     s.name AS student_name,
+    ->     c.course_name,
+    ->     e.year AS academic_year
+    -> FROM
+    ->     students s
+    -> JOIN
+    ->     enrollment e ON s.student_id = e.student_id
+    -> JOIN
+    ->     courses c ON e.course_id = c.course_id;
+Query OK, 0 rows affected (0.04 sec)
+
+mysql> SELECT * FROM env;
++--------------+------------------+---------------+
+| student_name | course_name      | academic_year |
++--------------+------------------+---------------+
+| AJAY         | Database Systems |          2024 |
++--------------+------------------+---------------+
+1 row in set (0.00 sec)
+
+mysql> SELECT student_name, course_name FROM env WHERE academic_year = 2024;
++--------------+------------------+
+| student_name | course_name      |
++--------------+------------------+
+| AJAY         | Database Systems |
++--------------+------------------+
+1 row in set (0.00 sec)
