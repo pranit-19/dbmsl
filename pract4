@@ -1,0 +1,257 @@
+Microsoft Windows [Version 10.0.26100.4770]
+(c) Microsoft Corporation. All rights reserved.
+
+C:\Program Files\MySQL\MySQL Server 9.2\bin>mysql -u root -p
+Enter password: ************
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 26
+Server version: 9.2.0 MySQL Community Server - GPL
+
+Copyright (c) 2000, 2025, Oracle and/or its affiliates.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+mysql> use demo;
+Database changed
+mysql> show databases;
++--------------------+
+| Database           |
++--------------------+
+| bank1              |
+| demo               |
+| information_schema |
+| mysql              |
+| performance_schema |
+| school             |
+| student            |
+| student1           |
+| sys                |
+| world              |
++--------------------+
+10 rows in set (0.00 sec)
+
+mysql>  CREATE TABLE college (     roll_no INT PRIMARY KEY,
+    ->         name VARCHAR(100),
+    ->         course VARCHAR(100),
+    ->         class VARCHAR(10),
+    ->          fees DECIMAL(10,2)
+    ->      );
+Query OK, 0 rows affected (0.10 sec)
+
+mysql> desc college;
++---------+---------------+------+-----+---------+-------+
+| Field   | Type          | Null | Key | Default | Extra |
++---------+---------------+------+-----+---------+-------+
+| roll_no | int           | NO   | PRI | NULL    |       |
+| name    | varchar(100)  | YES  |     | NULL    |       |
+| course  | varchar(100)  | YES  |     | NULL    |       |
+| class   | varchar(10)   | YES  |     | NULL    |       |
+| fees    | decimal(10,2) | YES  |     | NULL    |       |
++---------+---------------+------+-----+---------+-------+
+5 rows in set (0.04 sec)
+
+mysql>  INSERT INTO college (roll_no, name, course, class, fees)
+    ->      VALUES
+    ->      (1, 'Alice', 'Computer Science', 'be', 50000),
+    ->      (2, 'Bob', 'Mechanical', 'be', 48000),
+    ->      (3, 'Charlie', 'Civil', 'me', 45000);
+Query OK, 3 rows affected (0.04 sec)
+Records: 3  Duplicates: 0  Warnings: 0
+
+mysql> SELECT * FROM college;
++---------+---------+------------------+-------+----------+
+| roll_no | name    | course           | class | fees     |
++---------+---------+------------------+-------+----------+
+|       1 | Alice   | Computer Science | be    | 50000.00 |
+|       2 | Bob     | Mechanical       | be    | 48000.00 |
+|       3 | Charlie | Civil            | me    | 45000.00 |
++---------+---------+------------------+-------+----------+
+3 rows in set (0.03 sec)
+
+mysql> UPDATE college
+    ->      SET fees = fees + 20000 WHERE class = 'be';
+Query OK, 2 rows affected (0.01 sec)
+Rows matched: 2  Changed: 2  Warnings: 0
+
+mysql> SELECT fees + 20000 AS updated_fees FROM college
+    ->      WHERE class = 'be';
++--------------+
+| updated_fees |
++--------------+
+|     90000.00 |
+|     88000.00 |
++--------------+
+2 rows in set (0.03 sec)
+
+mysql>
+mysql> SELECT * FROM college;
++---------+---------+------------------+-------+----------+
+| roll_no | name    | course           | class | fees     |
++---------+---------+------------------+-------+----------+
+|       1 | Alice   | Computer Science | be    | 70000.00 |
+|       2 | Bob     | Mechanical       | be    | 68000.00 |
+|       3 | Charlie | Civil            | me    | 45000.00 |
++---------+---------+------------------+-------+----------+
+3 rows in set (0.00 sec)
+
+mysql> UPDATE college
+    ->      SET fees = fees  - 10000 WHERE class = 'me';
+Query OK, 1 row affected (0.03 sec)
+Rows matched: 1  Changed: 1  Warnings: 0
+
+mysql> SELECT fees - 10000 AS updated_fees FROM college
+    ->      WHERE class = 'me';
++--------------+
+| updated_fees |
++--------------+
+|     25000.00 |
++--------------+
+1 row in set (0.00 sec)
+
+mysql>
+mysql>  SELECT * FROM college;
++---------+---------+------------------+-------+----------+
+| roll_no | name    | course           | class | fees     |
++---------+---------+------------------+-------+----------+
+|       1 | Alice   | Computer Science | be    | 70000.00 |
+|       2 | Bob     | Mechanical       | be    | 68000.00 |
+|       3 | Charlie | Civil            | me    | 35000.00 |
++---------+---------+------------------+-------+----------+
+3 rows in set (0.00 sec)
+
+mysql> UPDATE college
+    ->      SET fees = fees  100*10 WHERE class = 'be';
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '100*10 WHERE class = 'be'' at line 2
+mysql> UPDATE college
+    ->      SET fees = fees  100/10 WHERE class = 'be';
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '100/10 WHERE class = 'be'' at line 2
+mysql>
+mysql> -- UPDATE: Multiply fees by 2 where class is 'be'
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> UPDATE college
+    ->     SET fees = fees * 2
+    ->     WHERE class = 'be';
+Query OK, 2 rows affected (0.04 sec)
+Rows matched: 2  Changed: 2  Warnings: 0
+
+mysql>
+mysql> -- SELECT: Show updated fees multiplied by 2
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> SELECT fees * 2 AS updated_fees
+    ->     FROM college
+    ->     WHERE class = 'be';
++--------------+
+| updated_fees |
++--------------+
+|    280000.00 |
+|    272000.00 |
++--------------+
+2 rows in set (0.00 sec)
+
+mysql> SELECT * FROM college;
++---------+---------+------------------+-------+-----------+
+| roll_no | name    | course           | class | fees      |
++---------+---------+------------------+-------+-----------+
+|       1 | Alice   | Computer Science | be    | 140000.00 |
+|       2 | Bob     | Mechanical       | be    | 136000.00 |
+|       3 | Charlie | Civil            | me    |  35000.00 |
++---------+---------+------------------+-------+-----------+
+3 rows in set (0.00 sec)
+
+mysql> -- UPDATE: Divide fees by 10 where class is 'be'
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> UPDATE college
+    ->     SET fees = fees / 10
+    ->     WHERE class = 'be';
+Query OK, 2 rows affected (0.02 sec)
+Rows matched: 2  Changed: 2  Warnings: 0
+
+mysql>
+mysql> -- SELECT: Show fees divided by 10
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> SELECT fees / 10 AS updated_fees
+    ->     FROM college
+    ->     WHERE class = 'be';
++--------------+
+| updated_fees |
++--------------+
+|  1400.000000 |
+|  1360.000000 |
++--------------+
+2 rows in set (0.00 sec)
+
+mysql> SELECT * FROM college;
++---------+---------+------------------+-------+----------+
+| roll_no | name    | course           | class | fees     |
++---------+---------+------------------+-------+----------+
+|       1 | Alice   | Computer Science | be    | 14000.00 |
+|       2 | Bob     | Mechanical       | be    | 13600.00 |
+|       3 | Charlie | Civil            | me    | 35000.00 |
++---------+---------+------------------+-------+----------+
+3 rows in set (0.00 sec)
+
+mysql> -- UPDATE: Set fees as remainder when divided by 3 where class is 'be'
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> UPDATE college
+    ->     SET fees = fees % 3
+    ->     WHERE class = 'be';
+Query OK, 2 rows affected (0.03 sec)
+Rows matched: 2  Changed: 2  Warnings: 0
+
+mysql>
+mysql> -- SELECT: Show fees modulo 3
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> SELECT fees % 3 AS updated_fees
+    ->     FROM college
+    ->     WHERE class = 'be';
++--------------+
+| updated_fees |
++--------------+
+|         2.00 |
+|         1.00 |
++--------------+
+2 rows in set (0.00 sec)
+
+mysql> SELECT * FROM college;
++---------+---------+------------------+-------+----------+
+| roll_no | name    | course           | class | fees     |
++---------+---------+------------------+-------+----------+
+|       1 | Alice   | Computer Science | be    |     2.00 |
+|       2 | Bob     | Mechanical       | be    |     1.00 |
+|       3 | Charlie | Civil            | me    | 35000.00 |
++---------+---------+------------------+-------+----------+
+3 rows in set (0.00 sec)
+
+mysql> CREATE INDEX vedant ON college(name);
+Query OK, 0 rows affected (0.08 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> CREATE UNIQUE INDEX college_unique_index ON college(name, course);
+Query OK, 0 rows affected (0.06 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> DROP INDEX vedant ON college;
+Query OK, 0 rows affected (0.04 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> SHOW INDEX FROM college;
++---------+------------+----------------------+--------------+-------------+-----------+-------------+----------+--------+------+------------+---------+---------------+---------+------------+
+| Table   | Non_unique | Key_name             | Seq_in_index | Column_name | Collation | Cardinality | Sub_part | Packed | Null | Index_type | Comment | Index_comment | Visible | Expression |
++---------+------------+----------------------+--------------+-------------+-----------+-------------+----------+--------+------+------------+---------+---------------+---------+------------+
+| college |          0 | PRIMARY              |            1 | roll_no     | A         |           3 |     NULL |   NULL |      | BTREE      |         |               | YES     | NULL       |
+| college |          0 | college_unique_index |            1 | name        | A         |           3 |     NULL |   NULL | YES  | BTREE      |         |               | YES     | NULL       |
+| college |          0 | college_unique_index |            2 | course      | A         |           3 |     NULL |   NULL | YES  | BTREE      |         |               | YES     | NULL       |
++---------+------------+----------------------+--------------+-------------+-----------+-------------+----------+--------+------+------------+---------+---------------+---------+------------+
+3 rows in set (0.04 sec)
+
+mysql>
