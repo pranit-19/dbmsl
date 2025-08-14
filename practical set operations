@@ -379,7 +379,7 @@ Query OK, 0 rows affected (0.353 sec)
 mysql> SELECT * FROM demo.table1;
 Empty set (0.024 sec)
 
-mysql> INSERT INTO table1 (id, name) VALUES (1, 'udayan'), (2, 'Neha');
+mysql> INSERT INTO table1 (id, name) VALUES (1, 'pranit'), (2, 'Neha');
 Query OK, 2 rows affected (0.101 sec)
 Records: 2  Duplicates: 0  Warnings: 0
 
@@ -409,7 +409,7 @@ mysql> CREATE TABLE table2 (
 Query OK, 0 rows affected (0.254 sec)
 
 mysql>
-mysql> INSERT INTO table1 VALUES (1, 'udayan'), (2, 'Neha');
+mysql> INSERT INTO table1 VALUES (1, 'pranit'), (2, 'Neha');
 ERROR 1062 (23000): Duplicate entry '1' for key 'table1.PRIMARY'
 mysql> INSERT INTO table2 VALUES (2, 'Neha'), (3, 'Ravi');
 Query OK, 2 rows affected (0.026 sec)
