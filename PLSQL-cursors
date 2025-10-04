@@ -1,0 +1,277 @@
+Input:-
+
+1)Implicit:-
+declare
+p_price product.price%type;
+begin
+select price into p_price from product where pid=101;
+if sql%found then
+dbms_output.put_line('Price fetched:'||p_price);
+else
+dbms_output.put_line('Product not found.');
+end if;
+end;
+/
+
+
+2)Explicit:
+declare
+cursor prod_cursor is select pid,pname,price from product;
+p_pid int;
+p_pname varchar(20);
+p_pr float;
+begin
+open prod_cursor;
+loop
+fetch prod_cursor into p_pid,p_pname,p_pr;
+exit when prod_cursor%notfound;
+dbms_output.put_line('pid'||p_pid||'pname'||p_pname||'price'||p_pr);
+end loop;
+close prod_cursor;
+end;
+/
+
+
+3)Parameterized:
+DECLARE
+  CURSOR product_cursor(p_price_1 NUMBER) IS 
+    SELECT pid, pname, price 
+    FROM product 
+    WHERE price > p_price_1;
+
+  p_pid   product.pid%TYPE;
+  p_pname product.pname%TYPE;
+  p_price product.price%TYPE;
+
+  v_input NUMBER;  
+BEGIN
+  v_input := &enter_price;
+
+  DBMS_OUTPUT.PUT_LINE('Starting to fetch products above price ' || v_input || '...');
+
+  OPEN product_cursor(v_input);
+  LOOP
+    FETCH product_cursor INTO p_pid, p_pname, p_price;
+    EXIT WHEN product_cursor%NOTFOUND;
+    DBMS_OUTPUT.PUT_LINE('pid: ' || p_pid || ', name: ' || p_pname || ', price: ' || p_price);
+  END LOOP;
+  CLOSE product_cursor;
+
+  DBMS_OUTPUT.PUT_LINE('Done fetching products.');
+EXCEPTION
+  WHEN OTHERS THEN
+    DBMS_OUTPUT.PUT_LINE('An error occurred: ' || SQLERRM);
+END;
+/
+
+
+4)For loop:-
+DECLARE
+v_increase NUMBER := 2.10;  
+BEGIN
+FOR rec IN (SELECT pid, price FROM product WHERE price < 5000) LOOP
+UPDATE product
+SET price = rec.price * v_increase
+WHERE pid = rec.pid;
+END LOOP;
+
+COMMIT;
+
+DBMS_OUTPUT.PUT_LINE('Prices updated.');
+END;
+/
+
+
+5) Update cursor
+SET SERVEROUTPUT ON;
+
+DECLARE
+   CURSOR c_update IS
+      SELECT pid, price FROM product
+      FOR UPDATE;  
+
+   v_pid   product.pid%TYPE;
+   v_price product.price%TYPE;
+BEGIN
+   OPEN c_update;
+   LOOP
+      FETCH c_update INTO v_pid, v_price;
+      EXIT WHEN c_update%NOTFOUND;
+
+      
+      UPDATE product
+      SET price = v_price * 1.10
+      WHERE CURRENT OF c_update;  
+
+      DBMS_OUTPUT.PUT_LINE('Price updated for PID ' || v_pid);
+   END LOOP;
+   CLOSE c_update;
+END;
+/
+
+
+6) Delete Cursor
+SET SERVEROUTPUT ON;
+
+DECLARE
+   CURSOR c_delete IS
+      SELECT pid, price FROM product
+      WHERE price < 3000
+      FOR UPDATE;  
+
+   v_pid   product.pid%TYPE;
+   v_price product.price%TYPE;
+BEGIN
+   OPEN c_delete;
+   LOOP
+      FETCH c_delete INTO v_pid, v_price;
+      EXIT WHEN c_delete%NOTFOUND;
+
+      
+      DELETE FROM product
+      WHERE CURRENT OF c_delete;
+
+      DBMS_OUTPUT.PUT_LINE('Product deleted with PID ' || v_pid);
+   END LOOP;
+   CLOSE c_delete;
+END;
+/
+
+
+
+Output:-
+SQL*Plus: Release 21.0.0.0.0 - Production on Fri Sep 26 00:24:39 2025
+Version 21.3.0.0.0
+
+Copyright (c) 1982, 2021, Oracle.  All rights reserved.
+
+Enter user-name: system
+Enter password:
+Last Successful login time: Fri Sep 26 2025 00:04:24 +05:30
+
+Connected to:
+Oracle Database 21c Express Edition Release 21.0.0.0.0 - Production
+Version 21.3.0.0.0
+
+SQL> CREATE TABLE product (
+  2      pid    NUMBER(5),
+  3      pname  VARCHAR2(50),
+  4      price  NUMBER(10,2)
+  5  );
+
+Table created.
+
+SQL>
+SQL>
+SQL> INSERT INTO product (pid, pname, price) VALUES (101, 'Mouse', 1000);
+
+1 row created.
+
+SQL> INSERT INTO product (pid, pname, price) VALUES (102, 'Keyboard', 2000);
+
+1 row created.
+
+SQL> INSERT INTO product (pid, pname, price) VALUES (103, 'Monitor', 3000);
+
+1 row created.
+
+SQL> INSERT INTO product (pid, pname, price) VALUES (104, 'CPU', 4000);
+
+1 row created.
+
+SQL>
+SQL>
+SQL> SELECT * FROM product;
+
+       PID PNAME                                                   PRICE
+---------- -------------------------------------------------- ----------
+       101 Mouse                                                    1000
+       102 Keyboard                                                 2000
+       103 Monitor                                                  3000
+       104 CPU                                                      4000
+
+SQL> @ SP2-0042: unknown command "S" - rest of line ignored.
+SQL> @ D:\Newfolder/implicit.sql
+
+PL/SQL procedure successfully completed.
+
+SQL> @ D:\Newfolder/implicit.sql
+Price fetched = 1000
+
+PL/SQL procedure successfully completed.
+
+SQL> @ D:\explicit/explicit.sql
+PID: 101, Name: Mouse, Price: 1000
+PID: 102, Name: Keyboard, Price: 2000
+PID: 103, Name: Monitor, Price: 3000
+PID: 104, Name: CPU, Price: 4000
+
+PL/SQL procedure successfully completed.
+
+SQL> @ D:\parameterized/parameterized.sql
+Enter value for enter_price: 2000
+old  13:   v_input := &enter_price;
+new  13:   v_input := 2000;
+Starting to fetch products above price 2000...
+pid: 103, name: Monitor, price: 3000
+pid: 104, name: CPU, price: 4000
+Done fetching products.
+
+PL/SQL procedure successfully completed.
+
+SQL> @ D:\forloop/loop.sql
+Prices updated.
+
+PL/SQL procedure successfully completed.
+
+SQL> SELECT * FROM product;
+
+       PID PNAME                                                   PRICE
+---------- -------------------------------------------------- ----------
+       101 Mouse                                                    2100
+       102 Keyboard                                                 4200
+       103 Monitor                                                  6300
+       104 CPU                                                      8400
+
+SQL> @ D:\update/update.sql
+Price updated for PID 101
+Price updated for PID 102
+Price updated for PID 103
+Price updated for PID 104
+
+PL/SQL procedure successfully completed.
+
+SQL> SELECT * FROM product;
+
+       PID PNAME                                                   PRICE
+---------- -------------------------------------------------- ----------
+       101 Mouse                                                    2310
+       102 Keyboard                                                 4620
+       103 Monitor                                                  6930
+       104 CPU                                                      9240
+
+SQL> @ D:\deletecursor/delete.sql
+
+PL/SQL procedure successfully completed.
+
+SQL> SELECT * FROM product;
+
+       PID PNAME                                                   PRICE
+---------- -------------------------------------------------- ----------
+       101 Mouse                                                    2310
+       102 Keyboard                                                 4620
+       103 Monitor                                                  6930
+       104 CPU                                                      9240
+
+SQL> @ D:\deletecursor/delete.sql
+Product deleted with PID 101
+
+PL/SQL procedure successfully completed.
+
+SQL> SELECT * FROM product;
+
+       PID PNAME                                                   PRICE
+---------- -------------------------------------------------- ----------
+       102 Keyboard                                                 4620
+       103 Monitor                                                  6930
+       104 CPU                                                      9240
