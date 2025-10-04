@@ -1,0 +1,161 @@
+INPUT:
+create or replace trigger bklib
+before update or delete on library
+for each row 
+begin
+insert into bklib values(:old.bookid,:old.bname,:old.author,:old.publisher,:old.price,:old.pdate);
+end;
+/
+
+
+
+OUTPUT:
+
+SQL*Plus: Release 21.0.0.0.0 - Production on Sun Sep 28 21:42:59 2025
+Version 21.3.0.0.0
+
+Copyright (c) 1982, 2021, Oracle.  All rights reserved.
+
+Enter user-name: system
+Enter password:
+Last Successful login time: Fri Sep 26 2025 02:27:42 +05:30
+
+Connected to:
+Oracle Database 21c Express Edition Release 21.0.0.0.0 - Production
+Version 21.3.0.0.0
+
+SQL>  create table library(bookid int,bname varchar(20),author varchar(20),publisher varchar(20),price float , pdate date);
+
+Table created.
+
+SQL> desc library;
+ Name                                      Null?    Type
+ ----------------------------------------- -------- ----------------------------
+ BOOKID                                             NUMBER(38)
+ BNAME                                              VARCHAR2(20)
+ AUTHOR                                             VARCHAR2(20)
+ PUBLISHER                                          VARCHAR2(20)
+ PRICE                                              FLOAT(126)
+ PDATE                                              DATE
+
+SQL> create table bklib * from library;
+create table bklib * from library
+                   *
+ERROR at line 1:
+ORA-00922: missing or invalid option
+
+
+SQL> reate table bklib as select * from library;
+SP2-0734: unknown command beginning "reate tabl..." - rest of line ignored.
+SQL> create table bklib as select * from library;
+
+Table created.
+
+SQL>  insert into library values(111,'toc','michacel','willy',1000,'22-jan-2025');
+
+1 row created.
+
+SQL> insert into library values(112,'dbms','jane','holly',2341,'22-oct-2025');
+
+1 row created.
+
+SQL> insert into library values(113,'cns','tony','ram',1170,'12-nov-2025');
+
+1 row created.
+
+SQL> select * from library;
+
+    BOOKID BNAME                AUTHOR               PUBLISHER
+---------- -------------------- -------------------- --------------------
+     PRICE PDATE
+---------- ---------
+       111 toc                  michacel             willy
+      1000 22-JAN-25
+
+       112 dbms                 jane                 holly
+      2341 22-OCT-25
+
+       113 cns                  tony                 ram
+      1170 12-NOV-25
+
+
+SQL> @ C:\Users\Vedant\OneDrive\Desktop\trig/tigger.sql
+
+Trigger created.
+
+SQL>  delete from library(111,'toc','michacel','willy',1000,'22-jan-2025');
+ delete from library(111,'toc','michacel','willy',1000,'22-jan-2025')
+                    *
+ERROR at line 1:
+ORA-00933: SQL command not properly ended
+
+
+SQL> delete from library (111,'toc','michacel','willy',1000,'22-jan-2025');
+delete from library (111,'toc','michacel','willy',1000,'22-jan-2025')
+                    *
+ERROR at line 1:
+ORA-00933: SQL command not properly ended
+
+
+SQL> delete from library;
+
+3 rows deleted.
+
+SQL>  select * from bklib;
+
+    BOOKID BNAME                AUTHOR               PUBLISHER
+---------- -------------------- -------------------- --------------------
+     PRICE PDATE
+---------- ---------
+       111 toc                  michacel             willy
+      1000 22-JAN-25
+
+       112 dbms                 jane                 holly
+      2341 22-OCT-25
+
+       113 cns                  tony                 ram
+      1170 12-NOV-25
+
+
+SQL> select * from library;
+
+no rows selected
+
+SQL>  create table library(bookid int,bname varchar(20),author varchar(20),publisher varchar(20),price float , pdate date);
+
+Table created.
+
+
+INPUT:
+STATEMENT TRIGGER:
+create or replace trigger statement
+before update or delete or insert on lib
+for each row 
+begin
+if rtrim(upper(to_char(sysdate,'day','nls_date_language=english')))='FRIDAY' then 
+raise_application_error(-20001,'operation not allowed on friday');
+end if;
+end;
+/
+OUTPUT:
+
+SQL>  @C:\trigger\trig.sql
+
+Trigger created.
+
+SQL>  insert into library values(111,'toc','korth','willy',500,'22-jan-2025');
+ 
+             *
+ERROR at line 1:
+ORA-20001: operation not allowed on friday
+ORA-06512: at "SYSTEM.STATEMENT", line 3
+ORA-04088: error during execution of trigger 'SYSTEM.STATEMENT'
+
+
+SQL> delete from lib;
+delete from lib
+            *
+ERROR at line 1:
+ORA-20001: operation not allowed on friday
+ORA-06512: at "SYSTEM.STATEMENT", line 3
+ORA-04088: error during execution of trigger 'SYSTEM.STATEMENT'
