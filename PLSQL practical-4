@@ -1,0 +1,230 @@
+Input:
+
+DECLARE 
+    R      NUMBER(3); 
+    Bn     VARCHAR2(30); 
+    Amt    NUMBER(6,2); 
+    DOI    DATE; 
+    DR     DATE := SYSDATE; 
+    days   NUMBER; 
+BEGIN 
+    R := &R; 
+    Bn := '&Bn'; 
+
+    SELECT Date_of_Issue 
+    INTO DOI 
+    FROM borrower1 
+    WHERE Roll_no = R AND NameOfBook = Bn AND Status = 'I';
+
+    days := DR - DOI;
+
+    IF days < 15 THEN 
+        DBMS_OUTPUT.PUT_LINE('No fine'); 
+        UPDATE borrower1  
+        SET Status = 'R' 
+        WHERE Roll_no = R AND NameOfBook = Bn; 
+    END IF;
+
+    IF days >= 15 AND days < 30 THEN
+        Amt := days * 5;
+        DBMS_OUTPUT.PUT_LINE('Fine: ' || Amt); 
+        UPDATE borrower1  
+        SET Status = 'R' 
+        WHERE Roll_no = R AND NameOfBook = Bn; 
+    END IF;
+
+    IF days >= 30 THEN
+        Amt := days * 50;
+        DBMS_OUTPUT.PUT_LINE('Fine: ' || Amt); 
+        UPDATE borrower1  
+        SET Status = 'R' 
+        WHERE Roll_no = R AND NameOfBook = Bn; 
+    END IF;
+
+    INSERT INTO fine1 (Roll_no, FineDate, Amt) 
+    VALUES (R, DR, NVL(Amt,0));
+
+    COMMIT;
+
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        DBMS_OUTPUT.PUT_LINE('No matching issued book found.');
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('Error: ' || SQLERRM);
+END;
+/
+
+Output:
+SQL*Plus: Release 21.0.0.0.0 - Production on Fri Sep 26 01:51:16 2025
+Version 21.3.0.0.0
+
+Copyright (c) 1982, 2021, Oracle.  All rights reserved.
+
+Enter user-name: system
+Enter password:
+Last Successful login time: Fri Sep 26 2025 01:35:53 +05:30
+
+Connected to:
+Oracle Database 21c Express Edition Release 21.0.0.0.0 - Production
+Version 21.3.0.0.0
+
+SQL>
+SQL> CREATE TABLE borrower1 (
+  2      Roll_no       NUMBER(3) PRIMARY KEY,
+  3      Name          VARCHAR2(50),
+  4      Date_of_Issue DATE,
+  5      NameOfBook    VARCHAR2(100),
+  6      Status        CHAR(1)
+  7  );
+
+Table created.
+
+SQL> DESC borrower1;
+ Name                                      Null?    Type
+ ----------------------------------------- -------- ----------------------------
+ ROLL_NO                                   NOT NULL NUMBER(3)
+ NAME                                               VARCHAR2(50)
+ DATE_OF_ISSUE                                      DATE
+ NAMEOFBOOK                                         VARCHAR2(100)
+ STATUS                                             CHAR(1)
+
+SQL>
+SQL> CREATE TABLE fine1 (
+  2      Roll_no   NUMBER(3),
+  3      FineDate  DATE,
+  4      Amt       NUMBER(6,2),
+  5      CONSTRAINT fk_roll FOREIGN KEY (Roll_no)
+  6          REFERENCES borrower1(Roll_no)
+  7  );
+
+Table created.
+
+SQL> DESC fine1;
+ Name                                      Null?    Type
+ ----------------------------------------- -------- ----------------------------
+ ROLL_NO                                            NUMBER(3)
+ FINEDATE                                           DATE
+ AMT                                                NUMBER(6,2)
+
+SQL> INSERT INTO borrower1 (Roll_no, Name, Date_of_Issue, NameOfBook, Status)
+  2  VALUES (111, 'Pranit', TO_DATE('25-AUG-2025','DD-MON-YYYY'), 'DBMS', 'I');
+
+1 row created.
+
+SQL>
+SQL> INSERT INTO borrower1 (Roll_no, Name, Date_of_Issue, NameOfBook, Status)
+  2  VALUES (112, 'pranish', TO_DATE('2-JUL-2025','DD-MON-YYYY'), 'CNS', 'I');
+
+1 row created.
+
+SQL>
+SQL> INSERT INTO borrower1 (Roll_no, Name, Date_of_Issue, NameOfBook, Status)
+  2  VALUES (113, 'siddhu', TO_DATE('01-NOV-2025','DD-MON-YYYY'), 'JAVA', 'I');
+
+1 row created.
+
+SQL>
+SQL> INSERT INTO borrower1 (Roll_no, Name, Date_of_Issue, NameOfBook, Status)
+  2  VALUES (114, 'omkar', TO_DATE('10-JUL-2025','DD-MON-YYYY'), 'IOTES', 'I');
+
+1 row created.
+
+SQL>
+SQL>
+SQL> COMMIT;
+
+Commit complete.
+
+SQL> select * from borrower1;
+
+   ROLL_NO NAME                                               DATE_OF_I
+---------- -------------------------------------------------- ---------
+NAMEOFBOOK
+--------------------------------------------------------------------------------
+S
+-
+       111 Pranit                                             25-AUG-25
+DBMS
+I
+
+       112 pranish                                            02-JUL-25
+CNS
+I
+
+   ROLL_NO NAME                                               DATE_OF_I
+---------- -------------------------------------------------- ---------
+NAMEOFBOOK
+--------------------------------------------------------------------------------
+S
+-
+
+       113 siddhu                                             01-NOV-25
+JAVA
+I
+
+       114 omkar                                              10-JUL-25
+IOTES
+
+   ROLL_NO NAME                                               DATE_OF_I
+---------- -------------------------------------------------- ---------
+NAMEOFBOOK
+--------------------------------------------------------------------------------
+S
+-
+I
+
+
+SQL>
+SQL> COLUMN Roll_no FORMAT 999
+SQL> COLUMN Name FORMAT A15
+SQL> COLUMN Date_of_Issue FORMAT A12
+SQL> COLUMN NameOfBook FORMAT A20
+SQL> COLUMN Status FORMAT A3
+SQL>
+SQL>
+SQL> SELECT * FROM borrower1;
+
+ROLL_NO NAME            DATE_OF_ISSU NAMEOFBOOK           STA
+------- --------------- ------------ -------------------- ---
+    111 Pranit           25-AUG-25    DBMS                 I
+    112 pranish          02-JUL-25    CNS                  I
+    113 siddhu           01-NOV-25    JAVA                 I
+    114 omkar            10-JUL-25    IOTES                I
+
+SQL> @ D:\book/book01.sql
+Enter value for r: 111
+old   9:     R := &R;
+new   9:     R := 111;
+Enter value for bn: DBMS
+old  10:     Bn := '&Bn';
+new  10:     Bn := 'DBMS';
+
+PL/SQL procedure successfully completed.
+
+SQL> @ D:\book/book01.sql
+Enter value for r: 112
+old   9:     R := &R;
+new   9:     R := 112;
+Enter value for bn: CNS
+old  10:     Bn := '&Bn';
+new  10:     Bn := 'CNS';
+
+PL/SQL procedure successfully completed.
+
+SQL> @ D:\book/book01.sql
+Enter value for r: 114
+old   9:     R := &R;
+new   9:     R := 114;
+Enter value for bn: IOTES
+old  10:     Bn := '&Bn';
+new  10:     Bn := 'IOTES';
+
+PL/SQL procedure successfully completed.
+
+SQL> select * from fine1;
+
+ROLL_NO FINEDATE         AMT
+------- --------- ----------
+    111 26-SEP-25    1604.24
+    112 26-SEP-25    4304.25
+    114 26-SEP-25    3904.27
